@@ -1,6 +1,7 @@
 struct Rucksack {
     comp1: String,
     comp2: String,
+    common: Option<char>,
 }
 
 impl Rucksack {
@@ -8,6 +9,7 @@ impl Rucksack {
         Self {
             comp1: String::from(&rucksack[0..(rucksack.len() / 2)]),
             comp2: String::from(&rucksack[(rucksack.len() / 2)..]),
+            common: None,
         }
     }
 
@@ -19,22 +21,39 @@ impl Rucksack {
         }
     }
 
-    fn find_doubled(&self) -> Option<char> {
+    fn find_doubled(&mut self) {
         for c in self.comp1.chars() {
             if self.comp2.contains(c) {
-                return Some(c)
+                self.common = Some(c);
+                return;
             }
         }
-        return None
     }
 
     fn priorities(rucksack: &str) -> u32 {
-        let rucksack = Self::new(rucksack);
-        if let Some(doubled) = rucksack.find_doubled() {
-            return Rucksack::map_priority(doubled)
+        let mut rucksack = Self::new(rucksack);
+        rucksack.find_doubled();
+        if let Some(doubled) = rucksack.common {
+            return Rucksack::map_priority(doubled);
         }
-        return 0
+        0
     }
+}
+
+fn three_elves_auth(all_rucksacks: String) -> u32 {
+    let mut sum = 0;
+    let rucksack_vec: Vec<_> = all_rucksacks.lines().collect();
+
+    for three_sacks in rucksack_vec.chunks(3) {
+        let (s1, s2, s3) = (three_sacks[0], three_sacks[1], three_sacks[2]);
+        for c in s1.chars() {
+            if s2.contains(c) && s3.contains(c) {
+                sum += Rucksack::map_priority(c);
+                break;
+            }
+        }
+    }
+    sum
 }
 
 fn main() {
@@ -45,7 +64,9 @@ fn main() {
         rucksacks
             .lines()
             .fold(0, |sum, line| sum + Rucksack::priorities(line))
-    )
+    );
+
+    println!("Part two: {}", three_elves_auth(rucksacks));
 }
 
 #[cfg(test)]

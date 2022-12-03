@@ -75,14 +75,14 @@ impl Choice {
 }
 
 fn round_score_part_one(round: &str) -> u8 {
-    let mut turns: Vec<_> = round.split(" ").collect();
+    let mut turns: Vec<_> = round.split(' ').collect();
     let me = Choice::for_me(turns.pop());
     let them = Choice::for_them(turns.pop());
     Choice::match_result(&me, &them) as u8 + me as u8
 }
 
 fn round_score_part_two(round: &str) -> u8 {
-    let mut turns: Vec<_> = round.split(" ").collect();
+    let mut turns: Vec<_> = round.split(' ').collect();
     let turn_res = MatchRes::from_outcome(turns.pop());
     let them = Choice::for_them(turns.pop());
     let me = Choice::from_outcome(&turn_res, &them);
