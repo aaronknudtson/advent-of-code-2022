@@ -151,13 +151,51 @@ fn get_sizes(root: Dir, sum: u32, sums: Rc<RefCell<Vec<u32>>>) -> u32 {
     dirsum
 }
 
+fn get_sizes_part2(root: Dir, sums: Rc<RefCell<Vec<u32>>>) -> u32 {
+    let curr = &*root.borrow();
+
+    // base case
+    if curr.directories.len() == 0 {
+        let dirsum = curr.files.iter().map(|v| v.borrow().size).sum::<u32>();
+        let mut this = sums.as_ref().borrow_mut();
+        this.push(dirsum);
+        return dirsum;
+    }
+
+    // recurse
+    let mut sub_dirs_sum = 0;
+    for dirs in curr.directories.iter() {
+        sub_dirs_sum += get_sizes_part2(Rc::clone(&dirs), Rc::clone(&sums));
+    }
+
+    // post get sum
+    let curr_dirsum = curr.files.iter().map(|v| v.borrow().size).sum::<u32>();
+    let dirsum = { sub_dirs_sum + curr_dirsum };
+    let mut this = sums.as_ref().borrow_mut();
+    this.push(dirsum);
+
+    dirsum
+}
+
 fn main() {
     let input = std::fs::read_to_string("src/day07.txt").unwrap();
     let root = Directory::parse_term_output(input);
     let sum = 0;
     let sums = Rc::new(RefCell::new(Vec::new()));
 
-    get_sizes(root, sum, Rc::clone(&sums));
-    println!("{:?}", sums);
+    get_sizes(Rc::clone(&root), sum, Rc::clone(&sums));
     println!("Part one: {}", sums.borrow().iter().sum::<u32>());
+
+    let sums2 = Rc::new(RefCell::new(Vec::new()));
+    get_sizes_part2(root, Rc::clone(&sums2));
+    let space_to_free = 30000000 - (70000000 - sums2.borrow().iter().max().unwrap());
+    println!(
+        "Part two: {:?}",
+        sums2
+            .borrow()
+            .iter()
+            .filter(|&v| *v >= space_to_free)
+            .min()
+            .unwrap()
+    );
 }
